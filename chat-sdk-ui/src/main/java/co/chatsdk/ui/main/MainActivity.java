@@ -23,12 +23,9 @@ import co.chatsdk.core.Tab;
 import co.chatsdk.core.events.EventType;
 import co.chatsdk.core.events.NetworkEvent;
 import co.chatsdk.core.session.ChatSDK;
-import co.chatsdk.core.session.NM;
+import co.chatsdk.core.session.InterfaceManager;
 import co.chatsdk.core.utils.DisposableList;
 import co.chatsdk.ui.R;
-import co.chatsdk.ui.manager.BaseInterfaceAdapter;
-import co.chatsdk.core.session.InterfaceManager;
-
 
 public class MainActivity extends BaseActivity {
 
@@ -118,9 +115,7 @@ public class MainActivity extends BaseActivity {
                 .filter(NetworkEvent.filterType(EventType.Logout))
                 .subscribe(networkEvent -> clearData()));
 
-
         reloadData();
-
     }
 
     @Override
