@@ -60,7 +60,7 @@ public class EditProfileActivity extends BaseActivity {
 
     protected User currentUser;
 
-    DisposableList disposableList = new DisposableList();
+    private DisposableList disposableList = new DisposableList();
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -328,6 +328,12 @@ public class EditProfileActivity extends BaseActivity {
         }
         availabilitySpinner.setSelection(getIndex(availabilitySpinner, availability));
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        disposableList.dispose();
     }
 
 }

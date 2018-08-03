@@ -33,7 +33,7 @@ public class MainActivity extends BaseActivity {
     protected ViewPager viewPager;
     protected PagerAdapterTabs adapter;
 
-    protected DisposableList disposables = new DisposableList();
+    protected DisposableList disposableList = new DisposableList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,28 +72,28 @@ public class MainActivity extends BaseActivity {
 //    }
 //
 //    public Completable requestMicrophoneAccess () {
-//        if(ChatSDK.audioMessage() != null) {
+//        if (ChatSDK.audioMessage() != null) {
 //            return PermissionRequestHandler.shared().requestRecordAudio(this);
 //        }
 //        return Completable.complete();
 //    }
 //
 //    public Completable requestExternalStorage () {
-////        if(ChatSDK.audioMessage() != null) {
+////        if (ChatSDK.audioMessage() != null) {
 //            return PermissionRequestHandler.shared().requestReadExternalStorage(this);
 ////        }
 ////        return Completable.complete();
 //    }
 //
 //    public Completable requestVideoAccess () {
-//        if(ChatSDK.videoMessage() != null) {
+//        if (ChatSDK.videoMessage() != null) {
 //            return PermissionRequestHandler.shared().requestVideoAccess(this);
 //        }
 //        return Completable.complete();
 //    }
 //
 //    public Completable requestReadContacts () {
-//        if(ChatSDK.contact() != null) {
+//        if (ChatSDK.contact() != null) {
 //            return PermissionRequestHandler.shared().requestReadContact(this);
 //        }
 //        return Completable.complete();
@@ -109,9 +109,9 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 
-        disposables.dispose();
+        disposableList.dispose();
 
-        disposables.add(ChatSDK.events().sourceOnMain()
+        disposableList.add(ChatSDK.events().sourceOnMain()
                 .filter(NetworkEvent.filterType(EventType.Logout))
                 .subscribe(networkEvent -> clearData()));
 
@@ -121,7 +121,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onPause () {
         super.onPause();
-        disposables.dispose();
+        disposableList.dispose();
     }
 
     @Override
@@ -168,7 +168,7 @@ public class MainActivity extends BaseActivity {
 
                 // We mark the tab as visible. This lets us be more efficient with updates
                 // because we only
-                for(int i = 0; i < tabs.size(); i++) {
+                for (int i = 0; i < tabs.size(); i++) {
                     ((BaseFragment) tabs.get(i).fragment).setTabVisibility(i == tab.getPosition());
                 }
             }
@@ -227,16 +227,16 @@ public class MainActivity extends BaseActivity {
     }
 
     public void clearData () {
-        for(Tab t : adapter.getTabs()) {
-            if(t.fragment instanceof BaseFragment) {
+        for (Tab t : adapter.getTabs()) {
+            if (t.fragment instanceof BaseFragment) {
                 ((BaseFragment) t.fragment).clearData();
             }
         }
     }
 
     public void reloadData () {
-        for(Tab t : adapter.getTabs()) {
-            if(t.fragment instanceof BaseFragment) {
+        for (Tab t : adapter.getTabs()) {
+            if (t.fragment instanceof BaseFragment) {
                 ((BaseFragment) t.fragment).safeReloadData();
             }
         }
@@ -255,8 +255,7 @@ public class MainActivity extends BaseActivity {
             String subject = ChatSDK.config().contactDeveloperEmailSubject;
             String dialogTitle = ChatSDK.config().contactDeveloperDialogTitle;
 
-            if(StringUtils.isNotEmpty(emailAddress))
-            {
+            if (StringUtils.isNotEmpty(emailAddress)) {
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
                         "mailto", emailAddress, null));
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);

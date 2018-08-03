@@ -29,14 +29,12 @@ import co.chatsdk.core.dao.User;
 import co.chatsdk.core.events.EventType;
 import co.chatsdk.core.events.NetworkEvent;
 import co.chatsdk.core.session.ChatSDK;
-import co.chatsdk.core.session.NM;
 import co.chatsdk.core.session.StorageManager;
 import co.chatsdk.core.utils.CrashReportingCompletableObserver;
 import co.chatsdk.core.utils.DisposableList;
 import co.chatsdk.core.utils.UserListItemConverter;
 import co.chatsdk.ui.R;
 import co.chatsdk.ui.main.BaseFragment;
-import co.chatsdk.core.session.InterfaceManager;
 import co.chatsdk.ui.search.SearchActivity;
 import co.chatsdk.ui.utils.ToastHelper;
 import io.reactivex.Completable;
@@ -79,7 +77,7 @@ public class ContactsFragment extends BaseFragment {
 
     protected Disposable listOnClickListenerDisposable;
 
-    protected DisposableList disposables = new DisposableList();
+    protected DisposableList disposableList = new DisposableList();
 
     /** Users that will be used to fill the adapter, This could be set manually or it will be filled when loading users for
      * {@link #loadingMode}*/
@@ -151,19 +149,19 @@ public class ContactsFragment extends BaseFragment {
         return f;
     }
 
-    public void setDialog(){
+    public void setDialog() {
         this.isDialog = true;
     }
 
-    public void setTitle(String title){
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public void setLoadingMode(int loadingMode){
+    public void setLoadingMode(int loadingMode) {
         this.loadingMode = loadingMode;
     }
 
-    public void setExtraData(Object extraData){
+    public void setExtraData(Object extraData) {
         this.extraData = extraData;
     }
 
@@ -187,20 +185,19 @@ public class ContactsFragment extends BaseFragment {
             setRetainInstance(true);
         }
 
-        disposables.add(ChatSDK.events().sourceOnMain()
+        disposableList.add(ChatSDK.events().sourceOnMain()
                 .filter(NetworkEvent.filterContactsChanged())
                 .subscribe(networkEvent -> loadData(false)));
 
-        disposables.add(ChatSDK.events().sourceOnMain()
+        disposableList.add(ChatSDK.events().sourceOnMain()
                 .filter(NetworkEvent.filterType(EventType.UserPresenceUpdated))
                 .subscribe(networkEvent -> loadData(true)));
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (isDialog) {
-            if(title.equals("")) {
+            if (title.equals("")) {
                 getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
             }
             else {
@@ -272,13 +269,13 @@ public class ContactsFragment extends BaseFragment {
         final ArrayList<User> originalUserList = new ArrayList<>();
         originalUserList.addAll(sourceUsers);
 
-        reloadUsers().observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
+        disposableList.add(reloadUsers().observeOn(AndroidSchedulers.mainThread()).subscribe(() -> {
             if (!originalUserList.equals(sourceUsers) || force) {
                 adapter.setUsers(UserListItemConverter.toUserItemList(sourceUsers), true);
                 Timber.v("Update Contact List");
             }
             setupListClickMode();
-        }, throwable -> ChatSDK.logError(throwable));
+        }, ChatSDK::logError));
     }
 
     @Override
@@ -289,11 +286,11 @@ public class ContactsFragment extends BaseFragment {
     }
 
     protected void setupListClickMode() {
-        if(listOnClickListenerDisposable != null) {
+        if (listOnClickListenerDisposable != null) {
             listOnClickListenerDisposable.dispose();
         }
         listOnClickListenerDisposable = adapter.getItemClicks().subscribe(o -> {
-            if(o instanceof User) {
+            if (o instanceof User) {
                 final User clickedUser = (User) o;
 
                 switch (clickMode) {
@@ -307,8 +304,8 @@ public class ContactsFragment extends BaseFragment {
                             thread = StorageManager.shared().fetchThreadWithEntityID((String) extraData);
                         }
 
-                        if(thread != null) {
-                            ChatSDK.thread().addUsersToThread(thread, clickedUser)
+                        if (thread != null) {
+                            disposableList.add(ChatSDK.thread().addUsersToThread(thread, clickedUser)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(() -> {
                                         ToastHelper.show(getContext(), getString(R.string.abstract_contact_fragment_user_added_to_thread_toast_success) + clickedUser.getName());
@@ -318,7 +315,7 @@ public class ContactsFragment extends BaseFragment {
                                     }, throwable -> {
                                         ChatSDK.logError(throwable);
                                         ToastHelper.show(getContext(), getString(R.string.abstract_contact_fragment_user_added_to_thread_toast_fail));
-                                    });
+                                    }));
                         }
                         break;
                     case CLICK_MODE_SHOW_PROFILE:
@@ -396,7 +393,7 @@ public class ContactsFragment extends BaseFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        disposables.dispose();
+        disposableList.dispose();
     }
 
 }
