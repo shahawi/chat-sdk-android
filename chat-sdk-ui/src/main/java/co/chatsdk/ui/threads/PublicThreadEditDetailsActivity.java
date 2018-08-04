@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import co.chatsdk.core.dao.Thread;
-import co.chatsdk.core.dao.ThreadMetaValue;
 import co.chatsdk.core.session.ChatSDK;
 import co.chatsdk.core.session.InterfaceManager;
 import co.chatsdk.core.session.StorageManager;
@@ -67,13 +66,8 @@ public class PublicThreadEditDetailsActivity extends BaseActivity {
 
         if (thread != null) {
             actionBar.setTitle(Strings.nameForThread(thread));
-            nameInput.setText(thread.getName());
+            nameInput.setText(thread.getDisplayName());
             saveButton.setText(R.string.update_public_thread);
-
-            // TODO: permanently move thread name into meta data
-            ThreadMetaValue nameMetaValue = thread.metaValueForKey("name");
-            if (nameMetaValue != null)
-                nameInput.setText(nameMetaValue.getValue());
         } else {
             saveButton.setEnabled(false);
         }
@@ -111,8 +105,8 @@ public class PublicThreadEditDetailsActivity extends BaseActivity {
                     .subscribe((_thread, throwable) -> {
                         if (throwable == null) {
                             // TODO: permanently move thread name into meta data
-                            thread.setMetaValue("name", threadName);
-                            disposableList.add(ChatSDK.thread().pushThreadMeta(thread).subscribe(() -> {
+                            _thread.setMetaValue("name", threadName);
+                            disposableList.add(ChatSDK.thread().pushThreadMeta(_thread).subscribe(() -> {
                                 dismissProgressDialog();
                                 ToastHelper.show(ChatSDK.shared().context(), String.format(getString(co.chatsdk.ui.R.string.public_thread__is_created), threadName));
 
